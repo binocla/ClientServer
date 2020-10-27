@@ -1,10 +1,11 @@
 import com.google.gson.Gson;
 import org.json.simple.JSONObject;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.concurrent.TimeUnit;
 
 class Client {
     private static final String HOSTNAME_LOCAL = "127.0.0.1";
@@ -21,6 +22,12 @@ class Client {
     private static final String RESULT_AC = "\nVERDICT: ACCEPTED";
     private static final String RESULT_WA = "\nVERDICT: WRONG ANSWER";
     private static final String RESULT_RE = "\nVERDICT: RUNTIME ERROR";
+    private static final String RESULT_AllWrong = "\nVERDICT: ALL WRONG";
+
+    // Flags for Checking Tasks
+    private static boolean FLAG_1 = false;
+    private static boolean FLAG_2 = false;
+    private static boolean FLAG_3 = false;
 
     private static InputStream inputStream;
     private static OutputStream outputStream;
@@ -50,38 +57,52 @@ class Client {
 
             // receiving and parsing json response file to get verdict from server
             responseItem = getServerResponse();
+            // accepted
+            // wrong answer
+            // runtime error
+            // accepted
+            // accepted
+            // accepted
+            // accepted
+
+            // Answer analyze
             switch (responseItem.getType()) {
-                case 1:
-                    // accepted
-                    System.out.println(RESULT_AC);
-                    break;
-                case 2:
-                    // wrong answer
-                    System.out.println(RESULT_WA);
-                    break;
-                case 3:
-                    // runtime error
-                    System.out.println(RESULT_RE);
-                    break;
-                case 4:
-                    // accepted
-                    System.out.println(RESULT_AC);
-                    break;
-                case 5:
-                    // accepted
-                    System.out.println(RESULT_AC);
-                    break;
-                case 6:
-                    // accepted
-                    System.out.println(RESULT_AC);
-                    break;
-                case 7:
-                    // accepted
-                    System.out.println(RESULT_AC);
-                    break;
-
+                case 0 -> System.out.println(RESULT_AllWrong);
+                case 1 -> FLAG_1 = true;
+                case 2 -> FLAG_2 = true;
+                case 3 -> {
+                    FLAG_1 = true;
+                    FLAG_2 = true;
+                }
+                case 4 -> FLAG_3 = true;
+                case 5 -> {
+                     FLAG_1 = true;
+                     FLAG_3 = true;
+                }
+                case 6 -> {
+                    FLAG_2 = true;
+                    FLAG_3 = true;
+                }
+                case 7 -> {
+                    FLAG_1 = true;
+                    FLAG_2 = true;
+                    FLAG_3 = true;
+                }
             }
-
+            // Verdict
+            if (FLAG_1) {
+                System.out.println("First answer is correct!");
+            } else {
+                System.out.println("First answer is incorrect!");
+            }if (FLAG_2) {
+                    System.out.println("Second answer is correct!");
+            } else {
+                System.out.println("Second answer is incorrect!");
+            }if (FLAG_3) {
+                    System.out.println("Third answer is correct!");
+            } else {
+                System.out.println("Third answer is incorrect!");
+            }
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -90,7 +111,8 @@ class Client {
 
     private static void sendStartRequest() throws IOException {
         // making startRequest json file
-        JSONObject startRequest = createJsonResponse(0, new double[][] {new double[] {0}}, new double[] {0}, 0);
+
+        JSONObject startRequest = createJsonResponse(0, new double[][] {new double[] {0}}, new double[] {0}, 0, Task.name);
         display("Sent request message: ", startRequest.toString());
         // sending startRequest json file to server
         outputStream.write(startRequest.toString().getBytes());
@@ -111,16 +133,16 @@ class Client {
 
     private static void sendResults() throws IOException {
         // making results json file
-        JSONObject results = createJsonResponse(1, Task.firstTask(), Task.secondTask(), Task.thirdTask());
+        ResponseItem responseItem = new ResponseItem();
+        JSONObject results = createJsonResponse(1, Task.firstTask(), Task.secondTask(), Task.thirdTask(), Task.name);
         display("Sent result message: ", results);
         // sending results json file to server
         outputStream.write(results.toString().getBytes());
     }
 
-    private static JSONObject createJsonResponse(int type, double[][] first, double[] second, int third) {
-        Gson gson = new Gson();
+    private static JSONObject createJsonResponse(int type, double[][] first, double[] second, int third, String name) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put(NAME, "Sample");
+        jsonObject.put(NAME, Task.name);
         jsonObject.put(TYPE, type);
         //jsonObject.put(OUT1, gson.toJson(first));
         //jsonObject.put(OUT2, gson.toJson(second));
@@ -136,11 +158,11 @@ class Client {
     }
 
     private static String getString(double[] object) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         for(double x:object) {
-            result += Double.toString(x);
+            result.append(x);
         }
-        return result;
+        return result.toString();
     }
 }
 

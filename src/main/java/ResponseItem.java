@@ -9,11 +9,11 @@ public class ResponseItem {
 
     public String getName() {
         return name;
-    }
+    } // TODO Do we need such constructions?
 
     public void setName(String name) {
         this.name = name;
-    }
+    } // TODO The same
 
     public int getType() {
         return Type;

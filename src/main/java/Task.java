@@ -7,6 +7,7 @@ public class Task {
     static double[][] normalized;
     static double[] proximities;
     static int resultClass;
+    public static String name = "Nomad"; // Name
 
     public static void main(String[] args) {
         Client.start();
